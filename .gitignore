@@ -1,0 +1,59 @@
+models/
+.models/
+
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__
+__pycache__/
+
+# Виртуальная среда
+whisperx_env
+venv/
+.venv/
+env/
+*.env
+
+# Журнал Git
+.git/
+
+# Папки и файлы с данными
+*.log
+*.csv
+*.tsv
+*.json
+
+# Модели и файлы Hugging Face
+*.pth
+*.bin
+
+# Тестовые файлы
+*.test
+*.tmp
+
+# IDE и редакторы
+.vscode/
+.idea/
+
+
+
+# Custom folders
+#Папка для хранения результатов транскрибации
+/TEXT_after_transcription/*
+!/TEXT_after_transcription/
+
+#Папка для хранения аудио и видео материалов
+/AUDIO_for_transcription/*
+!/AUDIO_for_transcription/
+
+
+transcription_output.txt
+
+
+#Папки, которые вы не хотите отправлять на гитхаб:
+*.LocalFolder/
+
+
+!*.ForcePushToGit
+
