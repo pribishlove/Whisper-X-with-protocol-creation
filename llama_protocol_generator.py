@@ -3,7 +3,7 @@ from llama_cpp import Llama
 # Загрузка модели LLaMA 3.1 с поддержкой chat-формата
 llm = Llama(
     model_path="models/llama-3-8B-Instruct.Q4_K_M.gguf",
-    n_ctx=8192,              # Убедись, что весь текст помещается в контекст
+    n_ctx=16384,              # Убедись, что весь текст помещается в контекст
     n_gpu_layers=35,         # Под твою RTX 4060 Ti (8 GB)
     n_threads=6,
     chat_format="llama-3"
