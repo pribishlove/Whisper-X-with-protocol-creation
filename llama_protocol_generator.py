@@ -1,36 +1,33 @@
 from llama_cpp import Llama
-import json
 
-# Загрузка модели с GPU
+# Загрузка модели LLaMA 3.1 с поддержкой chat-формата
 llm = Llama(
-    model_path="models/llama-2-7b-chat.Q4_K_M.gguf",
-    n_ctx=2048,
-    n_gpu_layers=35,  # Подстрой под свою видеокарту
-    n_threads=6
+    model_path="models/llama-3-8B-Instruct.Q4_K_M.gguf",
+    n_ctx=8192,              # Убедись, что весь текст помещается в контекст
+    n_gpu_layers=35,         # Под твою RTX 4060 Ti (8 GB)
+    n_threads=6,
+    chat_format="llama-3"
 )
 
-# Загрузка текста
-with open("TEXT_after_transcription/transcription_output.json", "r", encoding="utf-8") as f:
-    data = json.load(f)
+# Загрузка текста стенограммы
+with open("TEXT_after_transcription/transcription_output.txt", "r", encoding="utf-8") as f:
+    full_text = f.read()
 
-full_text = "\n".join([f"[{s.get('start', 0):.2f}s] {s.get('text', '')}" for s in data["segments"]])
-chunk_size = 1500
-chunks = [full_text[i:i+chunk_size] for i in range(0, len(full_text), chunk_size)]
+# Генерация протокола по полному тексту
+response = llm.create_chat_completion(
+    messages=[
+        {"role": "system", "content": "Ты помощник, который составляет краткий и информативный протокол по тексту совещания."},
+        {"role": "user", "content": f"Вот стенограмма совещания:\n\n{full_text}\n\nСоставь краткий протокол по тексту выше на русском языке."}
+    ],
+    max_tokens=2048,
+    temperature=0.3
+)
 
-protocol_parts = []
-for chunk in chunks:
-    prompt = (
-        "Ниже приведён фрагмент стенограммы совещания. Составь краткий протокол: \n\n"
-        f"{chunk}\n\n"
-        "Протокол:"
-    )
-    response = llm(prompt, max_tokens=1024, stop=["\n\n", "###"])
-    text = response["choices"][0]["text"].strip()
-    protocol_parts.append(text)
+# Извлекаем результат
+protocol = response["choices"][0]["message"]["content"].strip()
 
-full_protocol = "\n\n".join(protocol_parts)
-
+# Сохраняем протокол
 with open("TEXT_after_transcription/protocol_output.txt", "w", encoding="utf-8") as f:
-    f.write(full_protocol)
+    f.write(protocol)
 
 print("Протокол совещания сохранён в 'protocol_output.txt'")

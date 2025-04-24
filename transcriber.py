@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 import os
 import time
 import gc
-import json
 
 # Загружаем переменные окружения
 load_dotenv()
@@ -100,14 +99,14 @@ final_result = whisperx.assign_word_speakers(diarization, aligned_transcription)
 execution_time_diarization = time.time() - start_time_diarization
 print(f"END: Диаризация : {execution_time_diarization:.4f} секунд")
 
-output_data = {
-    "segments": final_result["segments"]
-}
+with open("TEXT_after_transcription/transcription_output.txt", "w", encoding="utf-8") as f:
+    for segment in final_result["segments"]:
+        speaker = segment.get('speaker', "Unknown")  # Возвращает "Unknown", если 'speaker' нет
+        if speaker == "Unknown":
+            print(f"WARNING: Speaker not found in segment: {segment}")
+        f.write(f"[{segment['start']:.2f}s - {segment['end']:.2f}s] Speaker {speaker}: {segment['text']}\n")
 
-with open("TEXT_after_transcription/transcription_output.json", "w", encoding="utf-8") as f:
-    json.dump(output_data, f, ensure_ascii=False, indent=4)
-
-print("Результаты сохранены в 'TEXT_after_transcription/transcription_output.json'")
+print("Результаты сохранены в 'transcription_output.txt'")
 
 # full_execution_time = time.time() - start_time_transcription
 # print(f"Время выполнения с диаризацией: {full_execution_time:.4f} секунд")
