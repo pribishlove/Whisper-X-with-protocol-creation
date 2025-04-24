@@ -1,5 +1,6 @@
-models/
-.models/
+#Папка для хранения аудио и видео материалов
+/models/*
+!/models/
 
 # Python
 *.pyc
@@ -56,4 +57,5 @@ transcription_output.txt
 
 
 !*.ForcePushToGit
+!*.PushToGit
 
