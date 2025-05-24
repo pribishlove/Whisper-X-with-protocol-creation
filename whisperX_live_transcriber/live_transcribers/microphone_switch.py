@@ -38,16 +38,16 @@ print("✅ Модель загружена.")
 def choose_audio_device():
     print("\n🎛️ Доступные устройства ввода:")
     devices = sd.query_devices()
-    input_devices = [d for d in devices if d['max_input_channels'] > 0]
+    input_devices = [(i, d) for i, d in enumerate(devices) if d['max_input_channels'] > 0]
 
-    for i, dev in enumerate(input_devices):
-        print(f"[{i}] {dev['name']}")
+    for i, dev in input_devices:
+        print(f"[{i}] {dev['name']} ({dev['hostapi']})")
 
     while True:
         try:
             idx = int(input("🔘 Выберите устройство ввода (по номеру): "))
-            if 0 <= idx < len(input_devices):
-                return input_devices[idx]['name']
+            if any(i == idx for i, _ in input_devices):
+                return idx
         except ValueError:
             pass
         print("❌ Неверный выбор, попробуйте снова.")
@@ -119,8 +119,8 @@ def transcribe_loop():
     print(final_text)
 
 # --- Выбор устройства перед запуском ---
-selected_device_name = choose_audio_device()
-sd.default.device = (selected_device_name, None)
+selected_device_index = choose_audio_device()
+sd.default.device = (selected_device_index, None)
 
 # --- Запуск ---
 print("\n🎙️ Скажите что-нибудь... (Произнесите 'стоп' для завершения)\n")
