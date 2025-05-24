@@ -1,4 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, Request, Depends
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import tempfile
@@ -10,11 +13,17 @@ from app.services.transcription import run_transcription
 from app.services.protocol import run_llama_protocol
 from app.core.auth import get_user_from_token
 from app.core.deps import oauth2_scheme
+from app.api import routes_frontend
 
 app = FastAPI()
 
 Base.metadata.create_all(bind=engine)
 
+templates = Jinja2Templates(directory="app/templates")
+
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+app.include_router(routes_frontend.router)
 app.include_router(routes_auth.router, prefix="/auth", tags=["auth"])
 app.include_router(routes_protected.router, prefix="/users", tags=["users"])
 
@@ -29,14 +38,18 @@ app.add_middleware(
 @app.post("/process")
 async def process_file(
     request: Request,
-    file: UploadFile = File(...),
-    token: str = Depends(oauth2_scheme),
+    file: UploadFile = File(...)
 ):
-    if request.scope.get("openapi"):
-        return {"detail": "Swagger schema access — auth bypassed"}
+    token = request.cookies.get("access_token")
+
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
 
     db = SessionLocal()
-    user = get_user_from_token(token, db)
+    try:
+        user = get_user_from_token(token, db)
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
 
     if user.requests_left <= 0:
         return JSONResponse(

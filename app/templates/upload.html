@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Загрузка файла</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            width: 340px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        h2 {
+            color: #111827;
+            margin-bottom: 1.5rem;
+        }
+        .file-label {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #e5e7eb;
+            color: #374151;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            box-sizing: border-box;
+            margin-bottom: 0.5rem;
+        }
+        .file-label:hover {
+            background-color: #d1d5db;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .file-name {
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #4b5563;
+        }
+        .file-remove {
+            width: 100%;
+            padding: 0.5rem;
+            font-size: 0.9rem;
+            color: white;
+            background-color: #ef4444;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 1rem;
+            display: none;
+            transition: background-color 0.2s;
+        }
+        .file-remove:hover {
+            background-color: #dc2626;
+        }
+        button[type="submit"] {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #3b82f6;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button[type="submit"]:hover {
+            background-color: #2563eb;
+        }
+        .logout {
+            margin-top: 1rem;
+            display: block;
+            font-size: 0.9rem;
+            color: #6b7280;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .logout:hover {
+            color: #374151;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Загрузка аудио/видео</h2>
+    <form id="uploadForm" action="/process" method="post" enctype="multipart/form-data">
+        <label class="file-label" for="fileInput">Выберите файл</label>
+        <input id="fileInput" type="file" name="file" accept="audio/*,video/*" required>
+        <div class="file-name" id="fileName">Файл не выбран</div>
+        <button type="button" class="file-remove" id="removeBtn" onclick="removeFile()">Удалить файл</button>
+        <button type="submit">Отправить</button>
+    </form>
+    <a class="logout" href="/logout">Выйти</a>
+</div>
+<script>
+    const input = document.getElementById("fileInput");
+    const fileNameDisplay = document.getElementById("fileName");
+    const removeBtn = document.getElementById("removeBtn");
+
+    input.addEventListener("change", function () {
+        if (this.files.length > 0) {
+            fileNameDisplay.textContent = this.files[0].name;
+            removeBtn.style.display = "block";
+        } else {
+            fileNameDisplay.textContent = "Файл не выбран";
+            removeBtn.style.display = "none";
+        }
+    });
+
+    function removeFile() {
+        input.value = "";
+        fileNameDisplay.textContent = "Файл не выбран";
+        removeBtn.style.display = "none";
+    }
+</script>
+</body>
+</html>
