@@ -2,7 +2,7 @@ import sounddevice as sd
 import numpy as np
 import scipy.io.wavfile as wav 
 
-samplerate = 16000  # Частота дискретизации
+samplerate = 16000  # Частота дискретизацииls
 duration = 5        # секунд
 
 print("🎙️ Говорите что-нибудь в течение 5 секунд...")

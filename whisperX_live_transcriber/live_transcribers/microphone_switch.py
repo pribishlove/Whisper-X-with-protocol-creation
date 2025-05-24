@@ -34,19 +34,29 @@ model = whisperx.load_model(
 )
 print("✅ Модель загружена.")
 
+# --- Функция выбора аудиоустройства ---
+def choose_audio_device():
+    print("\n🎛️ Доступные устройства ввода:")
+    devices = sd.query_devices()
+    input_devices = [(i, d) for i, d in enumerate(devices) if d['max_input_channels'] > 0]
+
+    for i, dev in input_devices:
+        print(f"[{i}] {dev['name']} ({dev['hostapi']})")
+
+    while True:
+        try:
+            idx = int(input("🔘 Выберите устройство ввода (по номеру): "))
+            if any(i == idx for i, _ in input_devices):
+                return idx
+        except ValueError:
+            pass
+        print("❌ Неверный выбор, попробуйте снова.")
+
 # --- Извлечение завершённых предложений ---
 def extract_sentences(text):
-    # Ищем завершённые предложения
     matches = list(re.finditer(r'[^.?!]+[.?!]', text))
     sentences = [match.group().strip() for match in matches]
-    
-    # Остаток — всё после последнего найденного предложения
-    if matches:
-        last_index = matches[-1].end()
-        remainder = text[last_index:].strip()
-    else:
-        remainder = text.strip()
-    
+    remainder = text[matches[-1].end():].strip() if matches else text.strip()
     return sentences, remainder
 
 # --- Запись аудио чанков ---
@@ -77,8 +87,7 @@ def transcribe_loop():
         segments = result.get("segments", [])
         current_raw_text = " ".join(seg["text"].strip().lower() for seg in segments if seg["text"].strip())
 
-        # Пропуск пустых или неинформативных чанков
-        if not current_raw_text or "no active speech" in current_raw_text or "No active speech found in audio" in current_raw_text:
+        if not current_raw_text or "no active speech" in current_raw_text.lower():
             continue
 
         print(f"\n🎧 Текущий чанк: {current_raw_text}")
@@ -98,17 +107,27 @@ def transcribe_loop():
             stop_event.set()
             break
 
+    if buffer_text.strip():
+        capitalized = buffer_text.strip()[0].upper() + buffer_text.strip()[1:]
+        full_text += capitalized + " "
+        print(f"📝 Добавлен остаток буфера: {capitalized}")
+
     print("\n📋 Полная транскрипция:")
     final_text = full_text.strip()
     if final_text:
         final_text = final_text[0].upper() + final_text[1:]
     print(final_text)
 
+# --- Выбор устройства перед запуском ---
+selected_device_index = choose_audio_device()
+sd.default.device = (selected_device_index, None)
+
 # --- Запуск ---
+print("\n🎙️ Скажите что-нибудь... (Произнесите 'стоп' для завершения)\n")
+
 rec_thread = threading.Thread(target=record_audio)
 trans_thread = threading.Thread(target=transcribe_loop)
 
-print("Скажите что-нибудь... (Скажите 'стоп' для завершения)")
 rec_thread.start()
 trans_thread.start()
 
