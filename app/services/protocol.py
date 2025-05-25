@@ -22,5 +22,5 @@ def run_llama_protocol(transcribed_text: str) -> str:
         temperature=0.3
     )
 
-    print(f"✅ Protocol generated in {time.time() - start:.2f} seconds")
+    print(f"Protocol generated in {time.time() - start:.2f} seconds")
     return response["choices"][0]["message"]["content"].strip()

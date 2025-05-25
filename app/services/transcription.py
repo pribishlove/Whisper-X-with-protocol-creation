@@ -2,6 +2,7 @@ import tempfile, time, io, gc
 import torch
 import whisperx
 from app.core.config import settings
+from whisperx.diarize import DiarizationPipeline
 
 def clear_memory():
     if settings.USE_GC:
@@ -31,7 +32,7 @@ def run_transcription(audio_bytes: bytes) -> str:
     aligned = whisperx.align(transcription["segments"], align_model, metadata, audio, settings.DEVICE)
     clear_memory()
 
-    diarize_model = whisperx.DiarizationPipeline(
+    diarize_model = DiarizationPipeline(
         use_auth_token=settings.HUGGINGFACE_TOKEN, device=settings.DEVICE
     )
     diarization = diarize_model(audio, min_speakers=settings.MIN_SPEAKERS, max_speakers=settings.MAX_SPEAKERS)
@@ -42,5 +43,5 @@ def run_transcription(audio_bytes: bytes) -> str:
         speaker = segment.get("speaker", "Unknown")
         text_output.write(f"[{segment['start']:.2f}s - {segment['end']:.2f}s] Speaker {speaker}: {segment['text']}\n")
 
-    print(f"✅ Transcription completed in {time.time() - start:.2f} seconds")
+    print(f"Transcription completed in {time.time() - start:.2f} seconds")
     return text_output.getvalue()
