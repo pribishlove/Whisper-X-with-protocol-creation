@@ -1,6 +1,7 @@
 import torch
 import whisperx
 from dotenv import load_dotenv
+from whisperx.diarize import DiarizationPipeline
 import os
 import time
 import gc
@@ -88,7 +89,7 @@ if (use_gc):
 start_time_diarization = time.time()
 ### Диаризация.
 # Загружаем модель для определения спикеров
-diarize_model = whisperx.DiarizationPipeline(use_auth_token=HUGGINGFACE_TOKEN, device=device)
+diarize_model = DiarizationPipeline(use_auth_token=HUGGINGFACE_TOKEN, device=device)
 
 # Выполняем диаризацию (разделение на спикеров)
 diarization = diarize_model(audio, min_speakers=min_speakers_count, max_speakers=max_speakers_count)
