@@ -31,11 +31,9 @@ source .venv/bin/activate
 ВАРИАНТ А(чат гпт)):
 --- Устанавливаем Pytorch перед whisperx: https://pytorch.org
 ```sh
-# Почему именно эта версия? тип другие выдают ошибки да, но где написанно что эта окажется норм? как нагуглил?
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121  # Для GPU
 ```
 ```sh
-# Почему не через pip install whisper
 pip install git+https://github.com/m-bain/whisperX.git
 ```
 ```sh
@@ -140,10 +138,10 @@ llm = Llama(
     n_threads=6,
     chat_format="llama-3"
 )
-- как минимум указать версию скаченной модели(если вы скачать отличную от указанной в скрипте)
-- в зависимсоти от размера текста понадобится изменить context(n_ctx): больше контекст - больше слов может обработать в запросе, но уменьшается скорость.
+- как минимум указать версию скаченной модели(если вы скачали отличную от указанной в скрипте)
+- в зависимсоти от размера текста понадобится изменить n_ctx(context): больше контекст - больше слов может обработать в запросе, но уменьшается скорость.
 
-5. В TEXT_after_transcrption поместите ваш текст после транскрибации в transcription_oitput.txt
+5. В TEXT_after_transcrption поместите ваш текст после транскрибации в transcription_output.txt
 
 6. Имзенить промпт внутри скрипта для ваших целей.
 Готово. Запускайте llama_protocol_generator.py

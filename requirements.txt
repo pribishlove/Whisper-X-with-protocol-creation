@@ -2,9 +2,9 @@
 git+https://github.com/m-bain/whisperX.git
 bcrypt==4.3.0
 passlib==1.7.4
-torch==2.7.0+cu118
-torchaudio==2.7.0+cu118
-torchvision==0.22.0+cu118
+torch==2.7.0+cu118 #Выдаст ошибку. CUDA версии нет в pip.
+torchaudio==2.7.0+cu118 #Выдаст ошибку. CUDA версии нет в pip.
+torchvision==0.22.0+cu118 #Выдаст ошибку. CUDA версии нет в pip.
 python-multipart==0.0.20
 python-jose==3.4.0
 psycopg2==2.9.10
