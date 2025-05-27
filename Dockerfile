@@ -6,8 +6,11 @@ WORKDIR /app
 
 # Устанавливаем системные зависимости
 RUN apt-get update && apt-get install -y \
-    #git \
-    #ffmpeg \
+    git \
+    ffmpeg \
+    libpq-dev \
+    gcc \
+    postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
     

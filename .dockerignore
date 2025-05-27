@@ -1,2 +1,13 @@
+.git
+.gitignore
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env/
 .venv/
-.git/
+*.log
+.DS_Store 
