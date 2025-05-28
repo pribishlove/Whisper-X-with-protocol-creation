@@ -1,10 +1,10 @@
 # CMAKE_ARGS="-DLLAMA_CUDA=on" pip install llama-cpp-python --force-reinstall --upgrade --no-cache-dir
-git+https://github.com/m-bain/whisperX.git
+# git+https://github.com/m-bain/whisperX.git
 bcrypt==4.3.0
 passlib==1.7.4
-torch==2.7.0 #Выдаст ошибку. CUDA версии нет в pip.
-torchaudio==2.7.0 #Выдаст ошибку. CUDA версии нет в pip.
-torchvision==0.22.0 #Выдаст ошибку. CUDA версии нет в pip.
+# torch==2.7.0 #Выдаст ошибку. CUDA версии нет в pip.
+# torchaudio==2.7.0 #Выдаст ошибку. CUDA версии нет в pip.
+# torchvision==0.22.0 #Выдаст ошибку. CUDA версии нет в pip.
 python-multipart==0.0.20
 python-jose==3.4.0
 psycopg2==2.9.10
@@ -14,3 +14,7 @@ numpy==2.2.5
 sounddevice==0.5.2
 scipy==1.15.2
 python-dotenv==1.1.0
+
+#Почему они не были указаны в requirements.txt?
+sqlalchemy
+jinja2
