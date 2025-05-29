@@ -6,7 +6,7 @@ global:
 app:
   name: transcriber-app
   image:
-    repository: stepanlem/transcriber-app:latest
+    repository: stepanlem/transcriber-app
     tag: latest
     pullPolicy: IfNotPresent
   replicaCount: 1
