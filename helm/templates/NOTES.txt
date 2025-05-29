@@ -1,0 +1,26 @@
+Спасибо за установку {{ .Chart.Name }}!
+
+Ваше приложение теперь доступно по следующим адресам:
+
+{{- if .Values.app.ingress.enabled }}
+  http{{ if .Values.app.ingress.tls }}s{{ end }}://{{ .Values.app.ingress.host }}
+{{- else }}
+  Внешний IP: {{ include "transcriber.fullname" . }}
+  {{- $serviceType := .Values.app.service.type }}
+  {{- if eq $serviceType "LoadBalancer" }}
+  Пожалуйста, подождите, пока LoadBalancer получит внешний IP:
+    kubectl get svc -w {{ include "transcriber.fullname" . }} -n {{ .Release.Namespace }}
+  {{- else if eq $serviceType "ClusterIP" }}
+  Вы можете получить доступ к сервису через порт-форвард:
+    kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "transcriber.fullname" . }} {{ .Values.app.service.port }}:{{ .Values.app.service.targetPort }}
+  {{- end }}
+{{- end }}
+
+Для проверки статуса приложения выполните:
+  kubectl get all -n {{ .Release.Namespace }}
+
+Для просмотра логов:
+  kubectl logs -f deployment/{{ .Values.app.name }} -n {{ .Release.Namespace }}
+
+Для удаления приложения:
+  helm uninstall {{ .Release.Name }} -n {{ .Release.Namespace }} 
