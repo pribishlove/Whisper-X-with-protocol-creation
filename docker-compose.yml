@@ -32,3 +32,5 @@ services:
 
 volumes:
   postgres_data:
+
+# после деплоя проверять на http://127.0.0.1:8000/
