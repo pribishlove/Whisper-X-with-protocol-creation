@@ -24,9 +24,29 @@ spec:
         imagePullPolicy: {{ .Values.app.image.pullPolicy }}
         ports:
         - containerPort: {{ .Values.app.service.targetPort }}
+        env:
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: postgres-secret
+                key: POSTGRES_USER
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgres-secret
+                key: POSTGRES_PASSWORD
+          - name: DB_NAME
+            valueFrom:
+              secretKeyRef:
+                name: postgres-secret
+                key: POSTGRES_DB
+          - name: DB_HOST
+            value: postgres  # Имя Service postgres
+          - name: DB_PORT
+            value: "5432"
         envFrom:
-        - secretRef:
-            name: postgres-secret
+            - secretRef:
+                name: {{ .Values.app.name }}-secret
         resources:
           {{- toYaml .Values.app.resources | nindent 12 }}
         readinessProbe:
