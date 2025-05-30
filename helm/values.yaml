@@ -7,7 +7,7 @@ app:
   name: transcriber-app
   image:
     repository: stepanlem/transcriber-app
-    tag: latest
+    tag: cpu
     pullPolicy: IfNotPresent
   replicaCount: 1
   resources:
