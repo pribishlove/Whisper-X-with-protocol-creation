@@ -60,7 +60,7 @@ postgresql:
     # или через values файл
     dbuser: "postgres"
     dbpassword: "admin"
-    dbhost: "db"
+    dbhost: "postgres"
     dbport: "5432"
     database: "whisperdb" 
     secretkey: "supersecret"
