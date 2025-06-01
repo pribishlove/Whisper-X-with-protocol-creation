@@ -1,6 +1,8 @@
 # Используем официальный образ Python
 FROM python:3.10.17-slim-bookworm
 
+ENV PYTHONUNBUFFERED=1
+
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
@@ -17,8 +19,6 @@ RUN pip install --upgrade pip && \
 
 COPY . .
 
-# Открываем нужный порт (если требуется)
 EXPOSE 8000
 
-# Команда запуска (замените на вашу)
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
