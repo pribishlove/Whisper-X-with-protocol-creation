@@ -1,6 +1,0 @@
-apiVersion: v2
-name: transcriber
-description: A Helm chart for Transcriber application
-type: application
-version: 0.1.0
-appVersion: "1.0.0" 
