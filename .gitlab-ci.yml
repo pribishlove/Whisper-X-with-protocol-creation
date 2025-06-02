@@ -20,26 +20,19 @@ test-job:
 deploy-job:
   stage: deploy
   script:
-    - # Install kubectl (if not already available in your CI environment)
     - if ! command -v kubectl &> /dev/null; then
-        echo "Installing kubectl..."
-        #  Example:  Download and install kubectl, adjust the version as needed for your Kubernetes cluster
-        curl -LO "https://dl.k8s.io/release/$(curl -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-        chmod +x kubectl
-        sudo mv kubectl /usr/local/bin/kubectl  # Or your preferred location in $PATH
+        echo "Installing kubectl..."   
+        curl -LO "https://dl.k8s.io/release/$(curl -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" 
+        chmod +x kubectl 
+        sudo mv kubectl /usr/local/bin/kubectl
       fi
-
-    - # Install Helm (if not already available in your CI environment)
     - if ! command -v helm &> /dev/null; then
         echo "Installing Helm..."
-        # Example: Download and install Helm, adjust the version as needed.
         curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
         chmod 700 get_helm.sh
         ./get_helm.sh
-        sudo mv /usr/local/bin/helm /usr/local/bin/helm  # Or preferred path
+        sudo mv /usr/local/bin/helm /usr/local/bin/helm
       fi
-
-    - git clone https://github.com/StepanLem/transcriber-infra.git transcriber-infra  # Clone the infrastructure repo
-    - cd transcriber-infra/helm  # Navigate to the Helm directory within the repo
-
+    - git clone https://github.com/StepanLem/transcriber-infra.git transcriber-infra
+    - cd transcriber-infra/helm
     - helm install transcriber . --create-namespace --namespace transcriber --values values.yaml
