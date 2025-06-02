@@ -1,49 +1,45 @@
-# This file is a template, and might need editing before it works on your project.
-# This is a sample GitLab CI/CD configuration file that should run without any modifications.
-# It demonstrates a basic 3 stage CI/CD pipeline. Instead of real tests or scripts,
-# it uses echo commands to simulate the pipeline execution.
-#
-# A pipeline is composed of independent jobs that run scripts, grouped into stages.
-# Stages run in sequential order, but jobs within stages run in parallel.
-#
-# For more information, see: https://docs.gitlab.com/ee/ci/yaml/#stages
-#
-# You can copy and paste this template into a new `.gitlab-ci.yml` file.
-# You should not add this template to an existing `.gitlab-ci.yml` file by using the `include:` keyword.
-#
-# To contribute improvements to CI/CD templates, please follow the Development guide at:
-# https://docs.gitlab.com/development/cicd/templates/
-# This specific template is located at:
-# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Getting-Started.gitlab-ci.yml
-
-stages:          # List of stages for jobs, and their order of execution
+stages:
   - build
   - test
   - deploy
 
-build-job:       # This job runs in the build stage, which runs first.
+build-job:
   stage: build
   script:
-    - echo "Compiling the code..."
-    - echo "Compile complete."
+    - docker build -t transcriber-app:cpu -t transcriber-app:latest .
 
-unit-test-job:   # This job runs in the test stage.
-  stage: test    # It only starts when the job in the build stage completes successfully.
+test-job:
+  stage: test
   script:
-    - echo "Running unit tests... This will take about 60 seconds."
-    - sleep 60
-    - echo "Code coverage is 90%"
+    - docker run --rm -d --name transcriber-app-test -p 8000:8000 transcriber-app:cpu  # Run the container in detached mode, expose port
+    - sleep 5
+    - curl -s -f http://localhost:8000/health || exit 1  # Perform health check, fail on error
+    - docker stop transcriber-app-test                 # Stop the container
+    - docker rm transcriber-app-test                 # Remove the container
 
-lint-test-job:   # This job also runs in the test stage.
-  stage: test    # It can run at the same time as unit-test-job (in parallel).
+deploy-job:
+  stage: deploy
   script:
-    - echo "Linting code... This will take about 10 seconds."
-    - sleep 10
-    - echo "No lint issues found."
+    - # Install kubectl (if not already available in your CI environment)
+    - if ! command -v kubectl &> /dev/null; then
+        echo "Installing kubectl..."
+        #  Example:  Download and install kubectl, adjust the version as needed for your Kubernetes cluster
+        curl -LO "https://dl.k8s.io/release/$(curl -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        chmod +x kubectl
+        sudo mv kubectl /usr/local/bin/kubectl  # Or your preferred location in $PATH
+      fi
 
-deploy-job:      # This job runs in the deploy stage.
-  stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
-  environment: production
-  script:
-    - echo "Deploying application..."
-    - echo "Application successfully deployed."
+    - # Install Helm (if not already available in your CI environment)
+    - if ! command -v helm &> /dev/null; then
+        echo "Installing Helm..."
+        # Example: Download and install Helm, adjust the version as needed.
+        curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+        chmod 700 get_helm.sh
+        ./get_helm.sh
+        sudo mv /usr/local/bin/helm /usr/local/bin/helm  # Or preferred path
+      fi
+
+    - git clone https://github.com/StepanLem/transcriber-infra.git transcriber-infra  # Clone the infrastructure repo
+    - cd transcriber-infra/helm  # Navigate to the Helm directory within the repo
+
+    - helm install transcriber . --create-namespace --namespace transcriber --values values.yaml
