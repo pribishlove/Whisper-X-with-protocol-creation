@@ -29,7 +29,7 @@ app.include_router(routes_protected.router, prefix="/users", tags=["users"])
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],sadasd
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
