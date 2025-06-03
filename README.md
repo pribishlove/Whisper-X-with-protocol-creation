@@ -1,93 +1,148 @@
-# transcriber
+ТРАНСКРИБАЦИЯ:
 
 
+--- Скачиваем на свой ПК:
+1. Python3.10: https://www.python.org/downloads/release/python-31011/
+2. NVIDIA CUDA Toolkit: https://developer.nvidia.com/cuda-downloads
 
-## Getting started
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://gitlab.com/StepanLem/transcriber.git
-git branch -M main
-git push -uf origin main
+--- Создаём виртуальное окружение:
+```sh
+python -m venv .venv
 ```
 
-## Integrate with your tools
 
-- [ ] [Set up project integrations](https://gitlab.com/StepanLem/transcriber/-/settings/integrations)
+--- Входим в виртуальное окружение:
+А) Через переключение версий python справа внизу VSCode с "3.10 Global" на "3.10 (.venv)"
+После этого открыть новый терминал и должно появиться уведомление, что venv скрыто активирован.
+Б) Если не получилось сделать А), то второй подход(aka "Каменный век"):
+**Windows:**
+```sh
+source .venv/Scripts/activate
+#иногда не работает и надо без source просто написать: .venv/Scripts/activate
+```
+**Linux/Mac:**
+```sh
+source .venv/bin/activate
+```
 
-## Collaborate with your team
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+--- Whisper и зависимости.
+ВАРИАНТ А(чат гпт)):
+--- Устанавливаем Pytorch перед whisperx: https://pytorch.org
+```sh
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121  # Для GPU
+```
+```sh
+pip install git+https://github.com/m-bain/whisperX.git
+```
+```sh
+pip install numpy torchaudio transformers ffmpeg-python silero-vad
+```
+```sh
+pip install python-dotenv
+```
+ВАРИАНТ Б(у меня сработало):
+- Установка аналогично обычному whisper:
+1. Скачиваем whisperX:  pip install git+https://github.com/m-bain/whisperX.git
+2. удаляем torch(потому что если сначала скачать торч не той версии, то whisper при обновлении скачет торч на cpu):   python -m pip uninstall torch
+3. устанавливаем torch с CUDA:   https://pytorch.org/get-started/locally/
 
-## Test and Deploy
 
-Use the built-in continuous integration in GitLab.
+ДАЛЕЕ:
+--- Создаём себе Токен Hugging Face для скачивания модели для диаризации спикера:
+1. Создаём аккаунт на HuggingFace.
+2. Идём в Настройки => Access Tokens(https://huggingface.co/settings/tokens) => Create new token =>
+{
+Token name = whisperx
+Все галочки оставьте в изначальном состоянии
+В "Repositories permissions" добавьте: pyannote/speaker-diarization-3.1 и pyannote/segmentation-3.0
+}
+=> CreateToken => Скопирывать токен и сохранить его куда-нибудь.
+3. Получить доступ к моделям. Надо зайти на каждую из ссылок и получить доступ к моделям(для этого заполнить данные вверху страницы).
+3.1 https://huggingface.co/pyannote/segmentation-3.0
+3.2 https://huggingface.co/pyannote/speaker-diarization-3.1
+4. Создаём в проекте в корневом каталоге файл с названием ".env"
+Вставляем в него строку:
+```python
+HUGGINGFACE_TOKEN="hf_..."
+```
+5. Вставьте в "" свой токен.
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
 
-***
 
-# Editing this README
+--- Установка cuDNN
+1. Авторизуйтесь на сайте **NVIDIA**
+2. Перейдите в раздел архива и скачайте **cuDNN v8.9.6**:
+   🔗 [Скачать cuDNN v8.9.6](https://developer.nvidia.com/rdp/cudnn-archive)
+3. Распакуйте архив и скопируйте файлы в соответствующие папки:
+| Папка в архиве | Куда скопировать |
+|---------------|----------------|
+| **bin/** | `C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.8\bin` |
+| **lib/** | `C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.8\lib\x64` |
+| **include/** | `C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.8\include` |
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
 
-## Suggestions for a good README
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
 
-## Name
-Choose a self-explaining name for your project.
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+---
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+## Добавление аудиофайла
+Скопируйте аудиофайл в рабочую папку и укажите его название в коде **transcriber.py**.
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+---
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+## Настройка скрипта:
+Выставьте настройки в transcriber.py:
+Те, что в подпунктах: "установи значения перед запуском" и "зависит от устройства".
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
 
-## License
-For open source projects, say how it is licensed.
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+
+
+
+ГЕНЕРАЦИЯ ПРОТОКОЛА:
+
+
+(для гайда по запуску transcriber.py смотри наш основной репозиторий с транскрибацией)
+**Для запуска llama_protocol_generator.py нужно:**
+0. Виртуальное окружение: python -m venv .venv
+
+1. В виртуальном окружении в консоль ввести:
+```bash
+$env:CMAKE_ARGS="-DLLAMA_CUDA=on" #создать переменную окружения
+pip install llama-cpp-python --force-reinstall --upgrade --no-cache-dir --verbose #установить llama-cpp
+```
+Будет долгое скачивание и установка(минут 10-15)
+
+2. Скачать модель с сайта.
+Заходите на сайт https://huggingface.co/mradermacher/llama-3-8B-Instruct-GGUF 
+и в таблице выбираете модель для скачивания ([таблица с сайта](https://huggingface.co/mradermacher/llama-3-8B-Instruct-GGUF#provided-quants))
+
+Можно экспеременитровать с разными моделями. Мы выбрали для начала из рекомендованных эту: Q4_K_M	
+
+3. Скаченную модель переместить в папку models в корневом каталоге.
+
+4. В скрипте llama_protocol_generator.py надо побаловаться с параметрами.
+llm = Llama(
+    model_path="models/llama-3-8B-Instruct.Q4_K_M.gguf",
+    n_ctx=16384,              # Убедись, что весь текст помещается в контекст
+    n_gpu_layers=35,         # Под твою RTX 4060 Ti (8 GB)
+    n_threads=6,
+    chat_format="llama-3"
+)
+- как минимум указать версию скаченной модели(если вы скачали отличную от указанной в скрипте)
+- в зависимсоти от размера текста понадобится изменить n_ctx(context): больше контекст - больше слов может обработать в запросе, но уменьшается скорость.
+
+5. В TEXT_after_transcrption поместите ваш текст после транскрибации в transcription_output.txt
+
+6. Имзенить промпт внутри скрипта для ваших целей.
+Готово. Запускайте llama_protocol_generator.py
+
