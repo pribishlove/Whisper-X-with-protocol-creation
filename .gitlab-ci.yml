@@ -1,12 +1,31 @@
 stages:
   - build
   - test
-  - deploy
 
-build-job:
+docker-build:
+  image: docker:cli
   stage: build
+  services:
+    - docker:dind
+  variables:
+    DOCKER_IMAGE_NAME: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  # All branches are tagged with $DOCKER_IMAGE_NAME (defaults to commit ref slug)
+  # Default branch is also tagged with `latest`
   script:
-    - docker build -t transcriber-app:cpu -t transcriber-app:latest .
+    - docker build --pull -t "$DOCKER_IMAGE_NAME" .
+    - docker push "$DOCKER_IMAGE_NAME"
+    - |
+      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
+        docker tag "$DOCKER_IMAGE_NAME" "$CI_REGISTRY_IMAGE:latest"
+        docker push "$CI_REGISTRY_IMAGE:latest"
+      fi
+  # Run this job in a branch where a Dockerfile exists
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      exists:
+        - Dockerfile
 
 test-job:
   stage: test
@@ -16,23 +35,3 @@ test-job:
     - curl -s -f http://localhost:8000/health || exit 1  # Perform health check, fail on error
     - docker stop transcriber-app-test                 # Stop the container
     - docker rm transcriber-app-test                 # Remove the container some more
-
-deploy-job:
-  stage: deploy
-  script:
-    - if ! command -v kubectl &> /dev/null; then
-        echo "Installing kubectl..."   
-        curl -LO "https://dl.k8s.io/release/$(curl -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" 
-        chmod +x kubectl 
-        sudo mv kubectl /usr/local/bin/kubectl
-      fi
-    - if ! command -v helm &> /dev/null; then
-        echo "Installing Helm..."
-        curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-        chmod 700 get_helm.sh
-        ./get_helm.sh
-        sudo mv /usr/local/bin/helm /usr/local/bin/helm
-      fi
-    - git clone https://github.com/StepanLem/transcriber-infra.git transcriber-infra
-    - cd transcriber-infra/helm
-    - helm install transcriber . --create-namespace --namespace transcriber --values values.yaml
