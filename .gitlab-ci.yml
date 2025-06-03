@@ -1,0 +1,38 @@
+stages:
+  - build
+  - test
+  - deploy
+
+build-job:
+  stage: build
+  script:
+    - docker build -t transcriber-app:cpu -t transcriber-app:latest .
+
+test-job:
+  stage: test
+  script:
+    - docker run --rm -d --name transcriber-app-test -p 8000:8000 transcriber-app:cpu  # Run the container in detached mode, expose port
+    - sleep 5
+    - curl -s -f http://localhost:8000/health || exit 1  # Perform health check, fail on error
+    - docker stop transcriber-app-test                 # Stop the container
+    - docker rm transcriber-app-test                 # Remove the container
+
+deploy-job:
+  stage: deploy
+  script:
+    - if ! command -v kubectl &> /dev/null; then
+        echo "Installing kubectl..."   
+        curl -LO "https://dl.k8s.io/release/$(curl -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" 
+        chmod +x kubectl 
+        sudo mv kubectl /usr/local/bin/kubectl
+      fi
+    - if ! command -v helm &> /dev/null; then
+        echo "Installing Helm..."
+        curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+        chmod 700 get_helm.sh
+        ./get_helm.sh
+        sudo mv /usr/local/bin/helm /usr/local/bin/helm
+      fi
+    - git clone https://github.com/StepanLem/transcriber-infra.git transcriber-infra
+    - cd transcriber-infra/helm
+    - helm install transcriber . --create-namespace --namespace transcriber --values values.yaml
