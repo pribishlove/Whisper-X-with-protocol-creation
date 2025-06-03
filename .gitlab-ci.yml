@@ -15,7 +15,7 @@ test-job:
     - sleep 5
     - curl -s -f http://localhost:8000/health || exit 1  # Perform health check, fail on error
     - docker stop transcriber-app-test                 # Stop the container
-    - docker rm transcriber-app-test                 # Remove the container
+    - docker rm transcriber-app-test                 # Remove the container some more
 
 deploy-job:
   stage: deploy
