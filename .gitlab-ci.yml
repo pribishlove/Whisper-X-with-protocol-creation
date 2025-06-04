@@ -1,44 +1,54 @@
+variables:
+  IMAGE_NAME: $CI_REGISTRY_IMAGE
+  IMAGE_TAG: $CI_COMMIT_REF_SLUG
+  IMAGE_NAME_AND_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  APP_NAME: transcriber
+  APP_NAMESPACE: transcriber
+
 stages:
   - build
   - test
+  - deploy
 
 docker-build:
-  image: docker:cli
   stage: build
+  image: docker:28.2.2-cli-alpine3.21
   services:
-    - docker:dind
-  variables:
-    DOCKER_IMAGE_NAME: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+    - docker:28.2.2-alpine3.21
   before_script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-  # All branches are tagged with $DOCKER_IMAGE_NAME (defaults to commit ref slug)
-  # Default branch is also tagged with `latest`
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
   script:
-    - docker build --pull -t "$DOCKER_IMAGE_NAME" .
-    - docker push "$DOCKER_IMAGE_NAME"
+    - docker build --pull -t "$IMAGE_NAME_AND_TAG" .
+    - docker push "$IMAGE_NAME_AND_TAG"
     - |
       if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
-        docker tag "$DOCKER_IMAGE_NAME" "$CI_REGISTRY_IMAGE:latest"
-        docker push "$CI_REGISTRY_IMAGE:latest"
+        docker tag "$IMAGE_NAME_AND_TAG" "$IMAGE_NAME:latest"
+        docker push "$IMAGE_NAME:latest"
       fi
-  # Run this job in a branch where a Dockerfile exists
   rules:
-    - if: $CI_COMMIT_BRANCH
+    - if: $CI_COMMIT_BRANCH == "main" 
       exists:
         - Dockerfile
 
-test-job:
-  image: docker:cli
-  stage: test
-  services:
-    - docker:dind
-  variables:
-    DOCKER_IMAGE_NAME: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+
+deploy:
+  stage: deploy
+  image: alpine:3.21
   before_script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - apk add --no-cache openssh
+    - chmod 400 "$SSH_PRIVATE_KEY"
   script:
-    - docker run --rm -d --name transcriber-app-test -p 8000:8000 "$DOCKER_IMAGE_NAME"  # Run the container in detached mode, expose port
-    - sleep 5
-    - curl -s -f http://localhost:8000/health || exit 1  # Perform health check, fail on error
-    - docker stop transcriber-app-test                 # Stop the container
-    - docker rm transcriber-app-test                 # Remove the container some more
+    - |
+      ssh root@$SSH_HOST -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "
+        export KUBECONFIG=/etc/rancher/k3s/k3s.yaml &&
+        cd /root/k8s/transcriber/helm/ &&
+        helm upgrade --install \
+          $APP_NAME \
+          . \
+          -n $APP_NAMESPACE \
+          --create-namespace \
+          --values values.yaml \
+          --set app.image.repository=$CI_REGISTRY_IMAGE \
+          --set app.image.tag=$CI_COMMIT_REF_SLUG"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
