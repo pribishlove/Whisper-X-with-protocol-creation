@@ -32,3 +32,4 @@ with open("TEXT_after_transcription/protocol_output.txt", "w", encoding="utf-8")
 
 print("Протокол совещания сохранён в 'protocol_output.txt'")
 
+
