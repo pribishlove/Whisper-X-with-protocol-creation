@@ -28,9 +28,16 @@ docker-build:
         - Dockerfile
 
 test-job:
+  image: docker:cli
   stage: test
+  services:
+    - docker:dind
+  variables:
+    DOCKER_IMAGE_NAME: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   script:
-    - docker run --rm -d --name transcriber-app-test -p 8000:8000 transcriber-app:cpu  # Run the container in detached mode, expose port
+    - docker run --rm -d --name transcriber-app-test -p 8000:8000 "$DOCKER_IMAGE_NAME"  # Run the container in detached mode, expose port
     - sleep 5
     - curl -s -f http://localhost:8000/health || exit 1  # Perform health check, fail on error
     - docker stop transcriber-app-test                 # Stop the container
