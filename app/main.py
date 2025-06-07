@@ -21,8 +21,6 @@ Base.metadata.create_all(bind=engine)
 
 templates = Jinja2Templates(directory="app/templates")
 
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
-
 app.include_router(routes_frontend.router)
 app.include_router(routes_auth.router, prefix="/auth", tags=["auth"])
 app.include_router(routes_protected.router, prefix="/users", tags=["users"])
