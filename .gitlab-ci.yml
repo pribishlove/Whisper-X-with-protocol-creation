@@ -41,7 +41,7 @@ docker-build:
         docker push "$IMAGE_NAME:latest"
       fi
   rules:
-    - if: $CI_COMMIT_BRANCH == "main" 
+    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "ci"
       exists:
         - Dockerfile
 
@@ -57,6 +57,18 @@ deploy:
       ssh root@$SSH_HOST -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "
         export KUBECONFIG=/etc/rancher/k3s/k3s.yaml &&
         cd /root/k8s/transcriber/helm/ &&
+
+        kubectl create secret generic $APP_NAME-secret \
+          --from-literal=SECRET_KEY='$SECRET_KEY' \
+          -n $APP_NAMESPACE --dry-run=client -o yaml | kubectl apply -f - &&
+
+        # Создаём или обновляем секрет из переменных окружения GitLab CI
+        kubectl create secret generic postgres-secret \
+          --from-literal=POSTGRES_USER='$DB_USER' \
+          --from-literal=POSTGRES_PASSWORD='$DB_PASSWORD' \
+          --from-literal=POSTGRES_DB='$DB_NAME' \
+          -n $APP_NAMESPACE --dry-run=client -o yaml | kubectl apply -f - &&
+
         helm upgrade --install \
           $APP_NAME \
           . \
@@ -64,6 +76,11 @@ deploy:
           --create-namespace \
           --values values.yaml \
           --set app.image.repository=$CI_REGISTRY_IMAGE \
-          --set app.image.tag=$CI_COMMIT_REF_SLUG"
+          --set app.image.tag=$CI_COMMIT_REF_SLUG
+      "
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "ci"
+
+
+
+
