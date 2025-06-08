@@ -14,8 +14,8 @@ def test_transcription_service(input_audio):
 
 
 @pytest.mark.parametrize("input_text,expected_sections", [
-    ("", ["asdasd", "asdddas:", "asdsda:", "asdsad:", "asdaasdsa:", "asds:"]),
-    ("Тестовый текст", ["asddsadas asddsad", "asdsaddsad:", "asdadsad:", "asdsadsa:", "asddsa asdasdd:", "asdsa:"]),
+    ("", ["ПРОТОКОЛ СОВЕЩАНИЯ", "Дата:", "Время:", "ПРИСУТСТВУЮЩИЕ:", "ПОВЕСТКА ДНЯ:", "РЕШЕНИЯ:"]),
+    ("Тестовый текст", ["ПРОТОКОЛ СОВЕЩАНИЯ", "Дата:", "Время:", "ПРИСУТСТВУЮЩИЕ:", "ПОВЕСТКА ДНЯ:", "РЕШЕНИЯ:"]),
 ])
 def test_protocol_sections(input_text, expected_sections):
     result = run_llama_protocol(input_text)
