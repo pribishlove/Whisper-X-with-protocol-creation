@@ -56,7 +56,7 @@ deploy:
     - |
       ssh root@$SSH_HOST -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "
         export KUBECONFIG=/etc/rancher/k3s/k3s.yaml &&
-        kubectl get namespace "$APP_NAMESPACE" >/dev/null 2>&1 || kubectl create namespace "$APP_NAMESPACE" &&
+        kubectl get namespace '$APP_NAMESPACE' >/dev/null 2>&1 || kubectl create namespace '$APP_NAMESPACE' &&
 
         cd /root/k8s/transcriber/helm/ &&
 
@@ -73,8 +73,8 @@ deploy:
 
         kubectl create secret docker-registry regcred \
           --docker-server=registry.gitlab.com \
-          --docker-username='$CI_REGISTRY_USER' \
-          --docker-password='$CI_REGISTRY_PASSWORD' \
+          --docker-username='$DEPLOY_USERNAME' \
+          --docker-password='$DEPLOY_TOKEN' \
           --docker-email=you@gmail.com \
           -n $APP_NAMESPACE --dry-run=client -o yaml | kubectl apply -f - &&
 
