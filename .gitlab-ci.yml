@@ -56,19 +56,29 @@ deploy:
     - |
       ssh root@$SSH_HOST -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "
         export KUBECONFIG=/etc/rancher/k3s/k3s.yaml &&
+        kubectl get namespace "$APP_NAMESPACE" >/dev/null 2>&1 || kubectl create namespace "$APP_NAMESPACE" &&
+
         cd /root/k8s/transcriber/helm/ &&
 
+        # Создаём или обновляем секреты из переменных окружения GitLab CI
         kubectl create secret generic $APP_NAME-secret \
           --from-literal=SECRET_KEY='$SECRET_KEY' \
           -n $APP_NAMESPACE --dry-run=client -o yaml | kubectl apply -f - &&
-
-        # Создаём или обновляем секрет из переменных окружения GitLab CI
+        
         kubectl create secret generic postgres-secret \
           --from-literal=POSTGRES_USER='$DB_USER' \
           --from-literal=POSTGRES_PASSWORD='$DB_PASSWORD' \
           --from-literal=POSTGRES_DB='$DB_NAME' \
           -n $APP_NAMESPACE --dry-run=client -o yaml | kubectl apply -f - &&
 
+        kubectl create secret docker-registry regcred \
+          --docker-server=registry.gitlab.com \
+          --docker-username='$CI_REGISTRY_USER' \
+          --docker-password='$CI_REGISTRY_PASSWORD' \
+          --docker-email=you@gmail.com \
+          -n $APP_NAMESPACE --dry-run=client -o yaml | kubectl apply -f - &&
+
+        # Деплоим через ssh. Да, есть куда расти.
         helm upgrade --install \
           $APP_NAME \
           . \
