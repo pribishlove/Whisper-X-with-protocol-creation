@@ -6,9 +6,24 @@ variables:
   APP_NAMESPACE: transcriber
 
 stages:
-  - build
   - test
+  - build
   - deploy
+
+
+tests:
+  stage: test
+  image: python:3.10.17-slim-bookworm
+  before_script:
+    - apt-get update && apt-get install -y gcc libpq-dev python3-dev
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
+  script:
+    - pytest app/tests/test_services.py -v -s
+  rules:
+    - exists:
+        - app/tests/test_services.py
+
 
 docker-build:
   stage: build
