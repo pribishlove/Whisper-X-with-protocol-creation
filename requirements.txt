@@ -18,3 +18,5 @@ python-dotenv==1.1.0
 #Почему они не были указаны в requirements.txt?
 sqlalchemy
 jinja2
+
+pytest # - для тестов
